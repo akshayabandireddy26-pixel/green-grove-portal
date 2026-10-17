@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Green Grove Portal - Student Dashboard</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tesseract.js OCR for Client-Side Screenshot UTR Extraction -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #f1f3f6;
+            --card-bg: #ffffff;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            --border-light: #e2e8f0;
+            --kmce-green: #2e7d32;
+            --kmce-red: #e53e3e;
+            --kmce-orange: #dd6b20;
+            --kmce-blue: #3182ce;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        /* Top Header Navbar */
+        .navbar {
+            background-color: #ffffff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 32px;
+            border-bottom: 1px solid var(--border-light);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .navbar-brand img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #2e7d32;
+        }
+
+        .kmce-logo {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.1;
+        }
+
+        .kmce-logo .badge-text {
+            font-size: 11px;
+            font-weight: 700;
+            color: #1a202c;
+            border-bottom: 2px solid #dd6b20;
+            padding-bottom: 2px;
+            margin-bottom: 2px;
+            display: inline-block;
+        }
+
+        .kmce-logo .brand-netra {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a365d;
+            font-family: Georgia, serif;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            list-style: none;
+        }
+
+        .nav-links li a {
+            text-decoration: none;
+            color: #4a5568;
+            font-size: 15px;
+            font-weight: 500;
+            padding: 8px 4px;
+            transition: color 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-links li a:hover,
+        .nav-links li a.active {
+            color: #1a202c;
+            font-weight: 600;
+            border-bottom: 2px solid #3182ce;
+        }
+
+        /* Profile & Dropdown */
+        .user-profile-wrapper {
+            position: relative;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 20px;
+            transition: background 0.2s;
+        }
+
+        .user-profile:hover {
+            background: #e2e8f0;
+        }
+
+        .user-profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #cbd5e0;
+        }
+
+        .user-profile span {
+            font-size: 14px;
+            color: #2d3748;
+            font-weight: 600;
+        }
+
+        /* Dropdown Modal */
+        .profile-dropdown {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 52px;
+            background: white;
+            width: 290px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            z-index: 1000;
+        }
+
+        .profile-dropdown.active {
+            display: block;
+        }
+
+        .dropdown-header {
+            padding: 18px;
+            background: #f7fafc;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .dropdown-header img {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #cbd5e0;
+        }
+
+        .dropdown-header .info h4 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1a202c;
+        }
+
+        .dropdown-header .info p {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 2px;
+        }
+
+        .dropdown-menu-list {
+            list-style: none;
+            padding: 6px 0;
+        }
+
+        .dropdown-menu-list li a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            font-size: 14px;
+            color: #4a5568;
+            text-decoration: none;
+            transition: background 0.15s;
+            cursor: pointer;
+        }
+
+        .dropdown-menu-list li a:hover {
+            background: #edf2f7;
+            color: #1a202c;
+        }
+
+        .dropdown-menu-list li a.sign-out {
+            color: var(--kmce-red);
+            border-top: 1px solid #e2e8f0;
+        }
+
+        /* Container Layout */
+        .main-container {
+            max-width: 1200px;
+            margin: 32px auto;
+            padding: 0 24px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 24px;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        /* DASHBOARD WIDGETS */
+        .top-widgets {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+
+        .widget-card {
+            background: #eef2f6;
+            border-radius: 12px;
+            padding: 22px;
+            min-height: 120px;
+            border: 1px solid #e2e8f0;
+            transition: transform 0.15s ease;
+        }
+
+        .widget-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .widget-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 14px;
+        }
+
+        .circle-status-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .status-circle {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 1.5px solid #a0aec0;
+            background: white;
+            display: inline-block;
+        }
+
+        .tiles-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 18px;
+        }
+
+        .tile-card {
+            background: #eef2f6;
+            border-radius: 12px;
+            padding: 28px 14px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .tile-card:hover {
+            transform: translateY(-2px);
+            background: #eef2f6;
+        }
+
+        .tile-card i {
+            font-size: 26px;
+            color: #4a5568;
+        }
+
+        .tile-card span {
+            font-size: 13px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        /* PROFILE VIEW CONTAINER */
+        .panel-box {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 28px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            position: relative;
+        }
+
+        .profile-flex {
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+        }
+
+        .profile-flex img {
+            width: 220px;
+            height: 240px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 1px solid #cbd5e0;
+        }
+
+        .profile-details-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .profile-details-table td {
+            padding: 12px 18px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 15px;
+        }
+
+        .profile-details-table td:first-child {
+            font-weight: 600;
+            color: #4a5568;
+            width: 180px;
+        }
+
+        .profile-details-table td:last-child {
+            color: #2d3748;
+        }
+
+        .profile-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .profile-action-btn {
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .profile-action-btn:hover {
+            background-color: #1b5e20;
+        }
+
+        .edit-btn-wrapper {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 16px;
+        }
+
+        /* PAYMENT STYLING & UPI BOX */
+        .payment-box {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #e2e8f0;
+            margin-top: 20px;
+        }
+
+        .upi-badge-box {
+            background: #f7fafc;
+            border: 2px dashed #3182ce;
+            border-radius: 10px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+
+        .upi-id-text {
+            font-family: monospace;
+            font-size: 16px;
+            font-weight: 700;
+            color: #2b6cb0;
+            background: #ebf8ff;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid #bee3f8;
+        }
+
+        .btn-pay {
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-pay:hover {
+            background-color: #1b5e20;
+        }
+
+        .btn-copy {
+            background: #3182ce;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .form-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .form-input-field {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 16px;
+            outline: none;
+        }
+
+        /* COMMON TABLES */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+
+        .data-table th {
+            text-align: left;
+            font-size: 14px;
+            font-weight: 600;
+            color: #4a5568;
+            padding: 12px 14px;
+            border-bottom: 1px solid #cbd5e0;
+            background: #f7fafc;
+        }
+
+        .data-table td {
+            padding: 14px;
+            font-size: 14px;
+            color: #2d3748;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-card .label { font-size: 13px; color: #718096; margin-bottom: 6px; }
+        .stat-card .value { font-size: 22px; font-weight: 700; color: #2d3748; }
+
+        .loader-spinner {
+            display: none;
+            margin-top: 10px;
+            color: #3182ce;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* Session Indicators Styling */
+        .session-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .session-badge {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+        }
+
+        .session-badge.white {
+            background: #ffffff;
+            border: 2px solid #cbd5e0;
+        }
+
+        .session-badge.green {
+            background: #e6f4ea;
+            color: #137333;
+            border: 2px solid #137333;
+        }
+
+        .session-badge.red {
+            background: #fce8e6;
+            color: #c5221f;
+            border: 2px solid #c5221f;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navbar -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <img src="image_4.png" alt="Green Grove Logo">
+            <div class="kmce-logo">
+                <span class="badge-text">Green Grove</span>
+                <span class="brand-netra">Portal</span>
+            </div>
+        </div>
+        <ul class="nav-links">
+            <li><a id="nav-dashboard" class="active" onclick="switchTab('dashboard')">Dashboard</a></li>
+            <li><a id="nav-attendance" onclick="switchTab('attendance')">Attendance</a></li>
+            <li><a id="nav-performance" onclick="switchTab('performance')">Performance</a></li>
+            <li><a id="nav-timetable" onclick="switchTab('timetable')">Timetable</a></li>
+            <li><a id="nav-results" onclick="switchTab('results')">Results</a></li>
+            <li><a id="nav-payment" onclick="switchTab('payment')">Payment</a></li>
+        </ul>
+        <div class="user-profile-wrapper">
+            <div class="user-profile" onclick="toggleDropdown()">
+                <img id="navStudentPhoto" src="student_profile.png" alt="Student Photo" onerror="this.src='https://ui-avatars.com/api/?name=Akshaya+Reddy&background=2e7d32&color=fff'">
+                <span id="navUserId">SCH2026001 <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i></span>
+            </div>
+            <!-- Dropdown Modal -->
+            <div id="profileDropdown" class="profile-dropdown">
+                <div class="dropdown-header">
+                    <img id="dropdownStudentPhoto" src="student_profile.png" alt="Student Photo" onerror="this.src='https://ui-avatars.com/api/?name=Akshaya+Reddy&background=2e7d32&color=fff'">
+                    <div class="info">
+                        <h4 id="headerStudentName">Akshaya Reddy Bandi</h4>
+                        <p>SCH2026001 | STUDENT</p>
+                    </div>
+                </div>
+                <ul class="dropdown-menu-list">
+                    <li><a onclick="switchTab('profile'); toggleDropdown();"><i class="fa-regular fa-user"></i> Profile</a></li>
+                    <li><a onclick="alert('Password reset link sent to registered email.'); toggleDropdown();"><i class="fa-solid fa-lock"></i> Update Password</a></li>
+                    <li><a class="sign-out" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <div class="main-container">
+
+        <!-- 1. DASHBOARD VIEW -->
+        <div id="view-dashboard" class="view-section active">
+            <h1 class="page-title">Student Dashboard</h1>
+
+            <!-- Top Summary Widgets -->
+            <div class="top-widgets">
+                <div class="widget-card" onclick="switchTab('attendance')" style="cursor: pointer;">
+                    <div class="widget-header">
+                        <i class="fa-regular fa-circle-check"></i> Attendance (<span id="widgetAttendancePct">0.0%</span>)
+                    </div>
+                    <div class="circle-status-row" id="widgetAttendanceDots">
+                        <span class="status-circle"></span>
+                        <span class="status-circle"></span>
+                        <span class="status-circle"></span>
+                        <span class="status-circle"></span>
+                        <span class="status-circle"></span>
+                    </div>
+                </div>
+
+                <div class="widget-card" onclick="switchTab('performance')" style="cursor: pointer;">
+                    <div class="widget-header">
+                        <i class="fa-solid fa-bullseye"></i> Performance
+                    </div>
+                    <div style="font-size: 14px; color: #718096;">No evaluations recorded yet</div>
+                </div>
+
+                <div class="widget-card" onclick="switchTab('payment')" style="cursor: pointer;">
+                    <div class="widget-header">
+                        <i class="fa-solid fa-credit-card"></i> School Fees Due
+                    </div>
+                    <div id="widgetFeeDueText" style="font-size: 20px; font-weight: 700; color: #e53e3e;">₹ 45,000 Due</div>
+                </div>
+            </div>
+
+            <!-- Action Tiles Grid -->
+            <div class="tiles-grid">
+                <div class="tile-card" onclick="switchTab('performance')">
+                    <i class="fa-solid fa-bullseye"></i>
+                    <span>Performance</span>
+                </div>
+                <div class="tile-card" onclick="alert('Notice Board is up to date.')">
+                    <i class="fa-regular fa-bell"></i>
+                    <span>Notice Board</span>
+                </div>
+                <div class="tile-card" onclick="switchTab('timetable')">
+                    <i class="fa-regular fa-clock"></i>
+                    <span>Timetable</span>
+                </div>
+                <div class="tile-card" onclick="switchTab('results')">
+                    <i class="fa-regular fa-newspaper"></i>
+                    <span>Results</span>
+                </div>
+                <div class="tile-card" onclick="alert('Assigned Mentor: Mrs. Sunita Rao')">
+                    <i class="fa-solid fa-user-tie"></i>
+                    <span>Mentor</span>
+                </div>
+                <div class="tile-card" onclick="switchTab('payment')">
+                    <i class="fa-solid fa-credit-card"></i>
+                    <span>Fee Dues</span>
+                </div>
+                <div class="tile-card" onclick="switchTab('attendance')">
+                    <i class="fa-regular fa-circle-check"></i>
+                    <span>Attendance</span>
+                </div>
+                <div class="tile-card" onclick="alert('Email Registered Successfully.')">
+                    <i class="fa-regular fa-envelope"></i>
+                    <span>Email Registration</span>
+                </div>
+                <div class="tile-card" onclick="alert('Face Registration Active.')">
+                    <i class="fa-solid fa-face-smile"></i>
+                    <span>Face Registration</span>
+                </div>
+                <div class="tile-card" onclick="alert('No active complaints.')">
+                    <i class="fa-regular fa-file-lines"></i>
+                    <span>Complaints</span>
+                </div>
+                <div class="tile-card" onclick="alert('Rules & Regulations loaded.')">
+                    <i class="fa-regular fa-bookmark"></i>
+                    <span>Rules & Regulations</span>
+                </div>
+                <div class="tile-card" onclick="alert('Settings panel.')">
+                    <i class="fa-solid fa-gear"></i>
+                    <span>Settings</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. EDITABLE STUDENT PROFILE VIEW -->
+        <div id="view-profile" class="view-section">
+            <h1 class="page-title">Student Profile</h1>
+            <div class="panel-box">
+                <div class="edit-btn-wrapper">
+                    <button id="toggleEditBtn" class="profile-action-btn" onclick="toggleEditProfile()">
+                        <i class="fa-solid fa-pen-to-square"></i> Edit Profile
+                    </button>
+                </div>
+                <div class="profile-flex">
+                    <img id="mainStudentPhoto" src="student_profile.png" alt="Student Photo" onerror="this.src='https://ui-avatars.com/api/?name=Akshaya+Reddy&background=2e7d32&color=fff'">
+                    <table class="profile-details-table">
+                        <tr>
+                            <td>Full Name</td>
+                            <td><span id="val-fullName"><strong>Akshaya Reddy Bandi</strong></span></td>
+                        </tr>
+                        <tr>
+                            <td>Admission / Roll No</td>
+                            <td><span id="val-rollNo">SCH2026001</span></td>
+                        </tr>
+                        <tr>
+                            <td>Class</td>
+                            <td><span id="val-class">Class 10</span></td>
+                        </tr>
+                        <tr>
+                            <td>Father Name</td>
+                            <td><span id="val-fatherName">Rajeshwar Reddy Bandi</span></td>
+                        </tr>
+                        <tr>
+                            <td>Father Contact</td>
+                            <td><span id="val-fatherContact">+91 98123 45678</span></td>
+                        </tr>
+                        <tr>
+                            <td>Mother Name</td>
+                            <td><span id="val-motherName">Radha Bandi</span></td>
+                        </tr>
+                        <tr>
+                            <td>Mother Contact</td>
+                            <td><span id="val-motherContact">+91 98123 45679</span></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. ATTENDANCE VIEW -->
+        <div id="view-attendance" class="view-section">
+            <h1 class="page-title">Attendance Overview</h1>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="label">Overall Attendance</div>
+                    <div id="statAttendancePct" class="value" style="color: var(--kmce-red);">0.0%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Total Days Present</div>
+                    <div id="statDaysPresent" class="value">0 / 0 Days</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Total Absences</div>
+                    <div id="statDaysAbsent" class="value">0 Days</div>
+                </div>
+            </div>
+
+            <div class="panel-box">
+                <h3 style="font-size: 16px; font-weight: 700; color: #1a202c; margin-bottom: 16px;">Last 2 Weeks Attendance Sessions</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr><th>Date</th><th>Sessions (8 Periods)</th></tr>
+                    </thead>
+                    <tbody id="attendanceTableBody">
+                        <tr><td colspan="2" style="text-align: center; color: #718096; padding: 20px;">No attendance recorded yet. Waiting for teacher input.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 4. PERFORMANCE VIEW -->
+        <div id="view-performance" class="view-section">
+            <h1 class="page-title">Performance & Tests</h1>
+            <div class="panel-box">
+                <table class="data-table">
+                    <thead>
+                        <tr><th>Subject</th><th>Exam Type</th><th>Marks Obtained</th><th>Percentage</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="4" style="text-align: center; color: #718096; padding: 20px;">No performance records available yet.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 5. TIMETABLE VIEW -->
+        <div id="view-timetable" class="view-section">
+            <h1 class="page-title">My Class Schedule (<span id="studentClassTitle">Class 10</span>)</h1>
+            <div class="panel-box">
+                <table class="data-table">
+                    <thead>
+                        <tr><th>Period</th><th>Time Slot</th><th>Subject</th><th>Teacher</th><th>Room</th></tr>
+                    </thead>
+                    <tbody id="studentTimetableBody">
+                        <tr><td colspan="5" style="text-align: center; color: #718096; padding: 20px;">Loading timetable...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 6. RESULTS VIEW -->
+        <div id="view-results" class="view-section">
+            <h1 class="page-title">Examination Results</h1>
+            <div class="panel-box">
+                <table class="data-table">
+                    <thead><tr><th>Subject</th><th>Max Marks</th><th>Secured</th><th>Grade</th></tr></thead>
+                    <tbody>
+                        <tr><td colspan="4" style="text-align: center; color: #718096; padding: 20px;">No examination results published yet.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 7. PAYMENT & UTR VERIFICATION VIEW -->
+        <div id="view-payment" class="view-section">
+            <h1 class="page-title">Fee Payments & Dues</h1>
+            <div class="stats-grid">
+                <div class="stat-card"><div class="label">Annual Fee</div><div class="value">₹ 45,000</div></div>
+                <div class="stat-card"><div class="label">Paid</div><div id="paidFeeVal" class="value" style="color: var(--kmce-green);">₹ 0</div></div>
+                <div class="stat-card"><div class="label">Remaining Due</div><div id="dueFeeVal" class="value" style="color: var(--kmce-red);">₹ 45,000</div></div>
+            </div>
+
+            <div class="payment-box">
+                <h3 style="font-size: 18px; font-weight: 700; color: #1a202c;">Pay Fee Dues via UPI</h3>
+                <p style="font-size: 13px; color: #718096; margin-top: 4px;">Make payment using GPay, PhonePe, Paytm, or BHIM to our official school UPI ID and verify below.</p>
+
+                <div class="upi-badge-box">
+                    <div>
+                        <div style="font-size: 12px; font-weight: 600; color: #4a5568;">OFFICIAL SCHOOL UPI ID</div>
+                        <div class="upi-id-text" id="schoolUpiId">akshayareddybandi2006@oksbi</div>
+                    </div>
+                    <button class="btn-copy" onclick="navigator.clipboard.writeText('akshayareddybandi2006@oksbi'); alert('UPI ID copied to clipboard!');">Copy UPI ID</button>
+                </div>
+
+                <form onsubmit="handlePaymentVerification(event)">
+                    <label class="form-label">Payment Amount (₹)</label>
+                    <input type="number" id="payAmount" class="form-input-field" placeholder="Enter amount to pay (e.g. 2000)" value="0" min="1" max="45000" required>
+
+                    <label class="form-label">12-Digit UTR / Transaction Reference Number</label>
+                    <input type="text" id="utrNumber" class="form-input-field" placeholder="Enter 12-digit UTR Number" required pattern="[0-9A-Za-z]{8,18}">
+
+                    <label class="form-label">Upload Payment Screenshot</label>
+                    <input type="file" id="paymentScreenshot" class="form-input-field" accept="image/*" required>
+
+                    <button type="submit" class="btn-pay"><i class="fa-solid fa-shield-check"></i> Submit Payment & Verify UTR</button>
+                    <div id="loaderSpinner" class="loader-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Analyzing screenshot and cross-checking UTR... Please wait...</div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script for Global Student Profile Sync & Timetable -->
+    <script>
+        let isEditing = false;
+        let currentDue = 45000;
+        let currentPaid = 0;
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+
+            const targetView = document.getElementById('view-' + tabName);
+            if (targetView) targetView.classList.add('active');
+
+            const targetNav = document.getElementById('nav-' + tabName);
+            if (targetNav) targetNav.classList.add('active');
+
+            if (tabName === 'attendance') {
+                loadStudentAttendance();
+            } else if (tabName === 'timetable') {
+                loadStudentTimetable();
+            } else if (tabName === 'profile') {
+                loadStudentProfileData();
+            }
+        }
+
+        function toggleDropdown() {
+            document.getElementById('profileDropdown').classList.toggle('active');
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.closest('.user-profile-wrapper')) {
+                document.getElementById('profileDropdown').classList.remove('active');
+            }
+        }
+
+        function loadStudentProfileData() {
+            const students = JSON.parse(localStorage.getItem('school_global_students') || '[{"rollNo":"SCH2026001","name":"Akshaya Reddy Bandi","class":"Class 10","fatherName":"Rajeshwar Reddy Bandi","fatherContact":"+91 98123 45678","motherName":"Radha Bandi","motherContact":"+91 98123 45679"}]');
+            const stu = students[0]; // Active student SCH2026001
+
+            document.getElementById('val-fullName').innerHTML = `<strong>${stu.name}</strong>`;
+            document.getElementById('val-rollNo').innerText = stu.rollNo;
+            document.getElementById('val-class').innerText = stu.class;
+            document.getElementById('val-fatherName').innerText = stu.fatherName || 'Rajeshwar Reddy Bandi';
+            document.getElementById('val-fatherContact').innerText = stu.fatherContact || '+91 98123 45678';
+            document.getElementById('val-motherName').innerText = stu.motherName || 'Radha Bandi';
+            document.getElementById('val-motherContact').innerText = stu.motherContact || '+91 98123 45679';
+
+            document.getElementById('headerStudentName').innerText = stu.name;
+            document.getElementById('navUserId').innerHTML = `${stu.rollNo} <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>`;
+        }
+
+        function toggleEditProfile() {
+            const btn = document.getElementById('toggleEditBtn');
+            const fields = ['fullName', 'rollNo', 'class', 'fatherName', 'fatherContact', 'motherName', 'motherContact'];
+
+            if (!isEditing) {
+                fields.forEach(field => {
+                    const elem = document.getElementById('val-' + field);
+                    const currentText = elem.innerText || elem.textContent;
+                    elem.innerHTML = `<input type="text" id="input-${field}" class="profile-input" value="${currentText}">`;
+                });
+                btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Save Profile`;
+                btn.style.backgroundColor = '#1b5e20';
+                isEditing = true;
+            } else {
+                const newName = document.getElementById('input-fullName').value.trim();
+                const newRollNo = document.getElementById('input-rollNo').value.trim();
+                const newClass = document.getElementById('input-class').value.trim();
+                const newFatherName = document.getElementById('input-fatherName').value.trim();
+                const newFatherContact = document.getElementById('input-fatherContact').value.trim();
+                const newMotherName = document.getElementById('input-motherName').value.trim();
+                const newMotherContact = document.getElementById('input-motherContact').value.trim();
+
+                let students = JSON.parse(localStorage.getItem('school_global_students') || '[]');
+                if (students.length > 0) {
+                    students[0].rollNo = newRollNo;
+                    students[0].name = newName;
+                    students[0].class = newClass;
+                    students[0].fatherName = newFatherName;
+                    students[0].fatherContact = newFatherContact;
+                    students[0].motherName = newMotherName;
+                    students[0].motherContact = newMotherContact;
+                } else {
+                    students = [{ rollNo: newRollNo, name: newName, class: newClass, fatherName: newFatherName, fatherContact: newFatherContact, motherName: newMotherName, motherContact: newMotherContact }];
+                }
+                localStorage.setItem('school_global_students', JSON.stringify(students));
+
+                loadStudentProfileData();
+
+                btn.innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Edit Profile`;
+                btn.style.backgroundColor = '#2e7d32';
+                isEditing = false;
+                alert('Student profile updated and synchronized globally across all portals!');
+            }
+        }
+
+        function loadStudentAttendance() {
+            const record = JSON.parse(localStorage.getItem('student_attendance_record') || 'null');
+            const tableBody = document.getElementById('attendanceTableBody');
+
+            if (!record) {
+                tableBody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: #718096; padding: 20px;">No attendance records available yet. Waiting for teacher input.</td></tr>`;
+                return;
+            }
+
+            const studentStatus = record.statusMap['001'] || 'absent';
+            const isPresent = studentStatus === 'present';
+
+            document.getElementById('widgetAttendancePct').innerText = record.percentage + '%';
+            document.getElementById('statAttendancePct').innerText = record.percentage + '%';
+            document.getElementById('statDaysPresent').innerText = (isPresent ? 1 : 0) + ' / 1 Days';
+            document.getElementById('statDaysAbsent').innerText = (isPresent ? 0 : 1) + ' Days';
+
+            if (isPresent) {
+                document.getElementById('statAttendancePct').style.color = 'var(--kmce-green)';
+            } else {
+                document.getElementById('statAttendancePct').style.color = 'var(--kmce-red)';
+            }
+
+            let sessionsHtml = `<div class="session-row">`;
+            if (isPresent) {
+                sessionsHtml += `<div class="session-badge green" title="Present"><i class="fa-solid fa-check"></i></div>`;
+            } else {
+                sessionsHtml += `<div class="session-badge red" title="Absent"><i class="fa-solid fa-xmark"></i></div>`;
+            }
+
+            for (let s = 2; s <= 8; s++) {
+                sessionsHtml += `<div class="session-badge white" title="Not Marked"></div>`;
+            }
+            sessionsHtml += `</div>`;
+
+            tableBody.innerHTML = `
+                <tr>
+                    <td><strong>${record.date}</strong></td>
+                    <td>${sessionsHtml}</td>
+                </tr>
+            `;
+        }
+
+        function loadStudentTimetable() {
+            const students = JSON.parse(localStorage.getItem('school_global_students') || '[{"class":"Class 10"}]');
+            const studentClass = students[0].class || 'Class 10';
+            document.getElementById('studentClassTitle').innerText = studentClass;
+
+            const allTimetables = JSON.parse(localStorage.getItem('school_global_timetables') || '{}');
+            const classSchedule = allTimetables[studentClass] || {};
+            const tbody = document.getElementById('studentTimetableBody');
+            const keys = Object.keys(classSchedule).sort((a,b) => parseInt(a) - parseInt(b));
+
+            if (keys.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #718096; padding: 20px;">No periods configured for ${studentClass} yet. Waiting for Admin update.</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            keys.forEach(p => {
+                const item = classSchedule[p];
+                html += `
+                    <tr>
+                        <td><strong>Period ${item.period}</strong></td>
+                        <td>${item.timeSlot}</td>
+                        <td>${item.subject}</td>
+                        <td><strong>${item.teacher}</strong></td>
+                        <td>${item.room}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        async function handlePaymentVerification(e) {
+            e.preventDefault();
+            const payAmount = parseInt(document.getElementById('payAmount').value);
+            const userUtr = document.getElementById('utrNumber').value.trim();
+            const screenshotInput = document.getElementById('paymentScreenshot');
+            const spinner = document.getElementById('loaderSpinner');
+
+            const cleanUtrKey = userUtr.toLowerCase().replace(/[^a-zA-Z0-9]/g, '');
+            let existingPayments = JSON.parse(localStorage.getItem('admin_payment_submissions') || '[]');
+
+            const isDuplicate = existingPayments.some(p => p.utr.toLowerCase().replace(/[^a-zA-Z0-9]/g, '') === cleanUtrKey);
+            if (isDuplicate) {
+                alert(`Duplicate Payment Rejected!\n\nThis UTR Number (${userUtr}) has ALREADY been submitted.`);
+                return;
+            }
+
+            if (payAmount <= 0) {
+                alert('Please enter an amount greater than ₹0');
+                return;
+            }
+
+            if (!screenshotInput.files || screenshotInput.files.length === 0) {
+                alert('Please upload your payment screenshot!');
+                return;
+            }
+
+            if (payAmount > currentDue) {
+                alert('Payment amount cannot be higher than remaining due ₹' + currentDue);
+                return;
+            }
+
+            spinner.style.display = 'block';
+
+            try {
+                const imageFile = screenshotInput.files[0];
+                const reader = new FileReader();
+                reader.onload = async function(event) {
+                    const base64Image = event.target.result;
+                    const result = await Tesseract.recognize(imageFile, 'eng');
+                    const scannedText = result.data.text.toLowerCase().replace(/[^a-zA-Z0-9]/g, '');
+
+                    spinner.style.display = 'none';
+
+                    if (scannedText.includes(cleanUtrKey) && cleanUtrKey.length >= 6) {
+                        currentPaid += payAmount;
+                        currentDue -= payAmount;
+
+                        document.getElementById('paidFeeVal').innerText = '₹ ' + currentPaid.toLocaleString();
+                        document.getElementById('dueFeeVal').innerText = '₹ ' + currentDue.toLocaleString();
+                        document.getElementById('widgetFeeDueText').innerText = '₹ ' + currentDue.toLocaleString() + ' Due';
+
+                        const students = JSON.parse(localStorage.getItem('school_global_students') || '[{"name":"Akshaya Reddy Bandi"}]');
+                        const newPaymentRecord = {
+                            id: Date.now(),
+                            studentName: students[0].name,
+                            rollNo: students[0].rollNo || "SCH2026001",
+                            amount: payAmount,
+                            utr: userUtr,
+                            screenshot: base64Image,
+                            date: new Date().toLocaleString(),
+                            status: "Verified"
+                        };
+
+                        existingPayments.unshift(newPaymentRecord);
+                        localStorage.setItem('admin_payment_submissions', JSON.stringify(existingPayments));
+
+                        document.getElementById('payAmount').value = "0";
+                        document.getElementById('utrNumber').value = "";
+                        screenshotInput.value = "";
+
+                        alert(`Payment Verified Successfully!\n\nUTR Number: ${userUtr}\nAmount Paid: ₹${payAmount}\nRemaining Fee Due: ₹${currentDue}`);
+                    } else {
+                        alert(`UTR Verification Failed!\n\nThe UTR Number (${userUtr}) could NOT be found inside the uploaded screenshot image.`);
+                    }
+                };
+                reader.readAsDataURL(imageFile);
+
+            } catch (err) {
+                spinner.style.display = 'none';
+                alert('Verification Error: Could not parse screenshot image.');
+            }
+        }
+
+        window.onload = function() {
+            loadStudentProfileData();
+            loadStudentAttendance();
+            loadStudentTimetable();
+        };
+
+        function logout() {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
