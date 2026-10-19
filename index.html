@@ -17,7 +17,8 @@
         }
 
         body {
-            background-color: #e8f5e9;
+            /* Soft Pastel Green Background Gradient */
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -27,37 +28,58 @@
 
         .login-card {
             background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(46, 125, 50, 0.08);
+            border: 1px solid #c8e6c9;
             padding: 40px;
             width: 100%;
             max-width: 400px;
             text-align: center;
         }
 
+        /* Brand Logo Section */
         .brand-logo {
             margin-bottom: 24px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            width: 100%;
+            text-align: center;
             gap: 14px;
         }
 
-        .brand-logo img {
+        /* Circular Border Wrapper */
+        .logo-circle {
             width: 100px;
             height: 100px;
             border-radius: 50%;
+            border: 2px solid #a5d6a7;
+            box-shadow: 0 3px 10px rgba(102, 187, 106, 0.25);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+
+        .logo-circle img {
+            width: 115%; /* Slightly scaled up to compensate for whitespace */
+            height: 115%;
             object-fit: cover;
-            border: 2px solid #2e7d32;
-            box-shadow: 0 3px 10px rgba(46, 125, 50, 0.2);
+            object-position: 42% center; /* Shifted slightly left to balance the right margin */
+            border-radius: 50%;
+            display: block;
         }
 
         .brand-logo .brand-netra {
             font-size: 28px;
             font-weight: 700;
-            color: #1a365d;
+            color: #2e5a32;
             font-family: Georgia, serif;
+            text-align: center;
+            width: 100%;
         }
 
         .form-group {
@@ -69,39 +91,80 @@
             display: block;
             font-size: 13px;
             font-weight: 600;
-            color: #4a5568;
+            color: #388e3c;
             margin-bottom: 6px;
         }
 
         .form-group input {
             width: 100%;
             padding: 10px 14px;
-            border: 1px solid #cbd5e0;
-            border-radius: 6px;
+            border: 1px solid #c8e6c9;
+            border-radius: 8px;
             font-size: 14px;
             outline: none;
-            transition: border-color 0.2s;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background-color: #fcfdfe;
         }
 
         .form-group input:focus {
-            border-color: #3182ce;
+            border-color: #81c784;
+            box-shadow: 0 0 0 3px rgba(129, 199, 132, 0.25);
         }
 
+        /* Password Field Wrapper for Eye Toggle Icon */
+        .password-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .password-wrapper input {
+            padding-right: 42px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            color: #66bb6a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+        }
+
+        .toggle-password:hover {
+            color: #2e7d32;
+        }
+
+        .toggle-password:focus {
+            outline: none;
+        }
+
+        /* Pastel Green Button Styling */
         .login-btn {
             width: 100%;
-            background-color: #2e7d32;
+            background-color: #66bb6a;
             color: white;
             border: none;
             padding: 12px;
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: background-color 0.2s, transform 0.1s;
         }
 
         .login-btn:hover {
-            background-color: #1b5e20;
+            background-color: #57a05b;
+        }
+
+        .login-btn:active {
+            transform: scale(0.99);
         }
 
         .error-message {
@@ -117,19 +180,26 @@
 
     <div class="login-card">
         <div class="brand-logo">
-            <img src="image_4.png" alt="Green Grove Logo">
+            <div class="logo-circle">
+                <img src="image_4.png" alt="Green Grove Logo">
+            </div>
             <div class="brand-netra">Green Grove Portal</div>
         </div>
 
         <form id="loginForm" onsubmit="handleLogin(event)">
             <div class="form-group">
-                <label for="userId">Admission No / Staff ID / Admin ID</label>
+                <label for="userId">Admission ID / Staff ID / Admin ID</label>
                 <input type="text" id="userId" placeholder="Enter User ID" required>
             </div>
 
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" placeholder="Enter Password" required>
+                <div class="password-wrapper">
+                    <input type="password" id="password" placeholder="Enter Password" required>
+                    <button type="button" class="toggle-password" id="togglePassword" aria-label="Toggle password visibility">
+                        <i class="fa-solid fa-eye" id="eyeIcon"></i>
+                    </button>
+                </div>
             </div>
 
             <button type="submit" class="login-btn">Login</button>
@@ -138,7 +208,25 @@
     </div>
 
     <script>
-        // Supabase Initialization with your new Publishable Key
+        // Eye Icon Toggle Script
+        const togglePasswordBtn = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+        const eyeIcon = document.getElementById('eyeIcon');
+
+        togglePasswordBtn.addEventListener('click', function () {
+            const isPassword = passwordInput.getAttribute('type') === 'password';
+            passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+
+            if (isPassword) {
+                eyeIcon.classList.remove('fa-eye');
+                eyeIcon.classList.add('fa-eye-slash');
+            } else {
+                eyeIcon.classList.remove('fa-eye-slash');
+                eyeIcon.classList.add('fa-eye');
+            }
+        });
+
+        // Supabase Client Initialization
         const SUPABASE_URL = 'https://fpfhyuhccccuxzzigmri.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_yfXyAFN8X0YhS0F9PsMADg_ecfkWtGt';
         const dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -170,7 +258,7 @@
                     return;
                 }
 
-                // Dynamic Redirect based on role
+                // Dynamic Redirect based on user role
                 if (data.role === 'admin') {
                     window.location.href = 'admin_dashboard.html';
                 } else if (data.role === 'teacher') {
