@@ -6,6 +6,8 @@
     <title>Green Grove Portal - Login</title>
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -224,8 +226,12 @@
             }
         });
 
-        // Local Storage Login Handler
-        function handleLogin(e) {
+        // Supabase Client Initialization with your credentials
+        const SUPABASE_URL = 'https://fpfhyuhccccuxzzigmri.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_yfXyAFN8X0YhS0F9PsMADg_ecfkWtGt';
+        const dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        async function handleLogin(e) {
             e.preventDefault();
             const idInput = document.getElementById('userId').value.trim();
             const passwordInput = document.getElementById('password').value.trim();
@@ -233,35 +239,42 @@
 
             errorMsg.style.display = 'none';
 
-            // Default Admin fallback account
+            // Fallback Admin check if needed
             if (idInput === 'ADMIN01' && passwordInput === 'Admin@333') {
                 window.location.href = 'admin_dashboard.html';
                 return;
             }
 
-            // Check users stored in localStorage (populated by Admin dashboard or CSV imports)
-            const savedUsers = JSON.parse(localStorage.getItem('greenGroveUsers')) || [];
-            const user = savedUsers.find(u => u.id === idInput);
+            try {
+                const { data, error } = await dbClient
+                    .from('users')
+                    .select('*')
+                    .eq('id', idInput)
+                    .single();
 
-            if (!user) {
-                errorMsg.innerText = 'User ID not found!';
+                if (error || !data) {
+                    errorMsg.innerText = 'User ID not found!';
+                    errorMsg.style.display = 'block';
+                    return;
+                }
+
+                if (data.password !== passwordInput) {
+                    errorMsg.innerText = 'Incorrect password!';
+                    errorMsg.style.display = 'block';
+                    return;
+                }
+
+                // Dynamic Redirect based on user role
+                if (data.role === 'admin') {
+                    window.location.href = 'admin_dashboard.html';
+                } else if (data.role === 'teacher') {
+                    window.location.href = 'teacher_dashboard.html';
+                } else {
+                    window.location.href = 'student_dashboard.html';
+                }
+            } catch (err) {
+                errorMsg.innerText = 'Error connecting to database';
                 errorMsg.style.display = 'block';
-                return;
-            }
-
-            if (user.password !== passwordInput) {
-                errorMsg.innerText = 'Incorrect password!';
-                errorMsg.style.display = 'block';
-                return;
-            }
-
-            // Dynamic Redirect based on user role
-            if (user.role === 'admin') {
-                window.location.href = 'admin_dashboard.html';
-            } else if (user.role === 'teacher') {
-                window.location.href = 'teacher_dashboard.html';
-            } else {
-                window.location.href = 'student_dashboard.html';
             }
         }
     </script>
